@@ -375,9 +375,11 @@ document.getElementById("loginForm")
       document.getElementById("adminPassword").value
     );
   } catch (error) {
-    document.getElementById("loginMessage").textContent =
-      "Login failed. Check your email and password.";
-  }
+  console.error("Firebase Login Error:", error);
+
+  document.getElementById("loginMessage").textContent =
+    "Login failed: " + error.code + " - " + error.message;
+}
 });
 
 // Check authority account
