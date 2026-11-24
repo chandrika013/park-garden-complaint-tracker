@@ -423,6 +423,10 @@ document.getElementById("complaintForm")
   try {
     await setDoc(doc(db, "complaints", complaintId), complaint);
 
+await setDoc(doc(db, "publicStatus", complaintId), {
+  status: "Pending"
+});
+
     const message = document.getElementById("message");
     message.hidden = false;
     message.textContent =
@@ -495,6 +499,8 @@ async function updateStatus(id, status) {
 
   try {
     await updateDoc(doc(db, "complaints", id), { status });
+
+    await updateDoc(doc(db, "publicStatus", id), { status });
     await showRecords();
   } catch (error) {
     alert("Unable to update status.");
