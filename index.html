@@ -313,7 +313,7 @@ from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 
 import {
   getFirestore, collection, doc, setDoc,
-  getDocs, updateDoc
+  getDoc, getDocs, updateDoc
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 import {
@@ -509,10 +509,37 @@ async function updateStatus(id, status) {
 }
 
 // Public tracking will be connected securely in the next step.
-window.trackComplaint = function() {
-  document.getElementById("trackResult").hidden = false;
-  document.getElementById("trackResult").textContent =
-    "Public tracking setup is coming next.";
+window.trackComplaint = async function() {
+  const complaintId =
+    document.getElementById("trackId").value.trim();
+
+  const result = document.getElementById("trackResult");
+
+  result.hidden = false;
+  result.textContent = "Checking complaint...";
+
+  if (!complaintId) {
+    result.textContent = "Please enter your Complaint ID.";
+    return;
+  }
+
+  try {
+    const statusDoc = await getDoc(
+      doc(db, "publicStatus", complaintId)
+    );
+
+    if (statusDoc.exists()) {
+      result.textContent =
+        "Complaint ID: " + complaintId +
+        " | Status: " + statusDoc.data().status;
+    } else {
+      result.textContent = "Complaint ID not found.";
+    }
+
+  } catch (error) {
+    console.error(error);
+    result.textContent = "Unable to track complaint. Please try again.";
+  }
 };
 </script>
 
