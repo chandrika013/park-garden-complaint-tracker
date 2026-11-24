@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Park - Complaint Tracker</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f2f7f1;
+  color: #243629;
+}
+
+header {
+  background: #176b42;
+  color: white;
+  padding: 20px 7%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+header h2 { font-size: 23px; }
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 15px;
+  font-size: 14px;
+}
+
+.hero {
+  background: linear-gradient(120deg, #176b42, #65a96c);
+  color: white;
+  padding: 65px 8%;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 35px;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  line-height: 1.7;
+  max-width: 650px;
+  margin: auto;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+.section-title {
+  color: #176b42;
+  margin-bottom: 18px;
+  font-size: 24px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 35px;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #00000012;
+}
+
+.card h3 {
+  color: #176b42;
+  margin-bottom: 8px;
+}
+
+form, .panel {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #00000012;
+  margin-bottom: 30px;
+}
+
+label {
+  display: block;
+  margin: 15px 0 7px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccd8cd;
+  border-radius: 7px;
+  font-size: 15px;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+button {
+  background: #176b42;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 7px;
+  margin-top: 18px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+button:hover { background: #104d30; }
+
+.secondary {
+  background: #52765e;
+}
+
+.result {
+  margin-top: 15px;
+  padding: 12px;
+  background: #e7f5e9;
+  border-radius: 7px;
+  overflow-wrap: anywhere;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  min-width: 550px;
+}
+
+th, td {
+  padding: 13px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background: #176b42;
+  color: white;
+}
+
+footer {
+  text-align: center;
+  background: #174d32;
+  color: white;
+  padding: 22px;
+  margin-top: 35px;
+}
+
+[hidden] { display: none !important; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>🌳 Green Park</h2>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#complaint">Report Issue</a>
+    <a href="#track">Track Complaint</a>
+    <a href="#authority">Dashboard</a>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <h1>Keep Our Parks Green & Clean</h1>
+  <p>
+    A community-based platform to report public park
+    and garden maintenance problems. Together, we can
+    create cleaner, greener and healthier public spaces.
+  </p>
+  <a href="#complaint">
+    <button>Report a Complaint</button>
+  </a>
+</section>
+
+<main class="container">
+
+<section>
+  <h2 class="section-title">Our Mission</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>🌱 Clean Parks</h3>
+      <p>Maintain clean and healthy surroundings.</p>
+    </div>
+    <div class="card">
+      <h3>💡 Public Safety</h3>
+      <p>Report damaged lights, benches and pathways.</p>
+    </div>
+    <div class="card">
+      <h3>🌿 Green Environment</h3>
+      <p>Encourage proper garden and plant maintenance.</p>
+    </div>
+  </div>
+</section>
+
+<section id="complaint">
+  <h2 class="section-title">Submit a Complaint</h2>
+
+  <form id="complaintForm">
+    <label>Your Name</label>
+    <input id="name" required placeholder="Enter your name">
+
+    <label>Park Name</label>
+    <input id="park" required placeholder="Enter park name">
+
+    <label>Complaint Category</label>
+    <select id="category" required>
+      <option value="">Select category</option>
+      <option>Unclean surroundings</option>
+      <option>Damaged benches</option>
+      <option>Broken lights</option>
+      <option>Overflowing dustbins</option>
+      <option>Damaged pathways</option>
+      <option>Poor plant maintenance</option>
+      <option>Other</option>
+    </select>
+
+    <label>Complaint Description</label>
+    <textarea id="description" required
+      placeholder="Describe the problem"></textarea>
+
+    <label>Location Details</label>
+    <input id="location" required
+      placeholder="Enter location">
+
+    <button type="submit">Submit Complaint</button>
+    <div id="message" class="result" hidden></div>
+  </form>
+</section>
+
+<section id="track">
+  <h2 class="section-title">Track Your Complaint</h2>
+  <div class="panel">
+    <label>Enter Complaint ID</label>
+    <input id="trackId" placeholder="Example: GP1001">
+    <button onclick="trackComplaint()">Track Status</button>
+    <div id="trackResult" class="result" hidden></div>
+  </div>
+</section>
+
+<section id="authority">
+  <h2 class="section-title">Authority Dashboard</h2>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total Complaints</h3>
+      <h2 id="total">0</h2>
+    </div>
+    <div class="card">
+      <h3>Pending</h3>
+      <h2 id="pending">0</h2>
+    </div>
+    <div class="card">
+      <h3>Resolved</h3>
+      <h2 id="resolved">0</h2>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Complaint Records</h3>
+    <p>Demo dashboard for viewing and updating complaints.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Park</th>
+            <th>Issue</th>
+            <th>Status</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody id="records"></tbody>
+      </table>
+    </div>
+    <p id="empty" style="padding:15px;">No complaints submitted yet.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>🌳 Green Park - Public Park and Garden Maintenance Complaint Tracker</p>
+  <p>Working Together for a Greener Community</p>
+</footer>
+
+<script>
+let complaints = JSON.parse(
+  localStorage.getItem("greenParkComplaints") || "[]"
+);
+
+function save() {
+  localStorage.setItem(
+    "greenParkComplaints",
+    JSON.stringify(complaints)
+  );
+}
+
+document.getElementById("complaintForm")
+.addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const complaint = {
+    id: "GP" + Date.now().toString().slice(-7),
+    name: document.getElementById("name").value,
+    park: document.getElementById("park").value,
+    category: document.getElementById("category").value,
+    description: document.getElementById("description").value,
+    location: document.getElementById("location").value,
+    status: "Pending"
+  };
+
+  complaints.push(complaint);
+  save();
+  showRecords();
+
+  const message = document.getElementById("message");
+  message.hidden = false;
+  message.textContent =
+    "Complaint submitted! Your Complaint ID is " + complaint.id;
+
+  this.reset();
+});
+
+function trackComplaint() {
+  const id = document.getElementById("trackId")
+    .value.trim().toUpperCase();
+
+  const complaint = complaints.find(c => c.id === id);
+  const result = document.getElementById("trackResult");
+
+  result.hidden = false;
+
+  if (!complaint) {
+    result.textContent = "Complaint not found. Please check your ID.";
+    return;
+  }
+
+  result.textContent =
+    "Park: " + complaint.park +
+    " | Issue: " + complaint.category +
+    " | Status: " + complaint.status;
+}
+
+function updateStatus(id, status) {
+  complaints = complaints.map(c =>
+    c.id === id ? {...c, status: status} : c
+  );
+  save();
+  showRecords();
+}
+
+function showRecords() {
+  const records = document.getElementById("records");
+  records.innerHTML = "";
+
+  complaints.forEach(c => {
+    const tr = document.createElement("tr");
+
+    [c.id, c.name, c.park, c.category, c.status]
+      .forEach(value => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+
+    const action = document.createElement("td");
+    const select = document.createElement("select");
+
+    ["Pending", "In Progress", "Resolved"].forEach(s => {
+      const option = document.createElement("option");
+      option.value = s;
+      option.textContent = s;
+      option.selected = c.status === s;
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", () =>
+      updateStatus(c.id, select.value)
+    );
+
+    action.appendChild(select);
+    tr.appendChild(action);
+    records.appendChild(tr);
+  });
+
+  document.getElementById("total").textContent = complaints.length;
+  document.getElementById("pending").textContent =
+    complaints.filter(c => c.status === "Pending").length;
+  document.getElementById("resolved").textContent =
+    complaints.filter(c => c.status === "Resolved").length;
+
+  document.getElementById("empty").hidden = complaints.length > 0;
+}
+
+showRecords();
+</script>
+
+</body>
+</html>
