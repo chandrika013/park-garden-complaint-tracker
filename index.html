@@ -307,73 +307,144 @@ footer {
   <p>Working Together for a Greener Community</p>
 </footer>
 
-<script>
-let complaints = JSON.parse(
-  localStorage.getItem("greenParkComplaints") || "[]"
-);
+<script type="module">
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 
-function save() {
-  localStorage.setItem(
-    "greenParkComplaints",
-    JSON.stringify(complaints)
-  );
-}
+import {
+  getFirestore, collection, doc, setDoc,
+  getDocs, updateDoc
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
-document.getElementById("complaintForm")
-.addEventListener("submit", function(e) {
+import {
+  getAuth, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "Jv4L8nKXFTPJOpnE6on2wfjJmNi1",
+  authDomain: "greenparkcomplainttracker.firebaseapp.com",
+  projectId: "greenparkcomplainttracker",
+  storageBucket: "greenparkcomplainttracker.firebasestorage.app",
+  messagingSenderId: "464481341050",
+  appId: "1:464481341050:web:a04930fd98c06fddccb5c3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Authority UID
+const ADMIN_UID = "Jv4L8nKXFTPJOpnE6on2wfjJmNi1";
+
+// Dashboard elements
+const section = document.getElementById("authority");
+const cards = section.querySelector(".cards");
+const panel = section.querySelector(".panel");
+
+// Create login panel
+const loginBox = document.createElement("div");
+loginBox.className = "panel";
+loginBox.innerHTML = `
+  <h3>Authority Login</h3>
+  <form id="loginForm">
+    <label>Email</label>
+    <input id="adminEmail" type="email" required>
+    <label>Password</label>
+    <input id="adminPassword" type="password" required>
+    <button type="submit">Login</button>
+    <p id="loginMessage"></p>
+  </form>
+  <button id="logoutButton" hidden>Logout</button>
+`;
+section.insertBefore(loginBox, cards);
+
+cards.hidden = true;
+panel.hidden = true;
+
+// Authority login
+document.getElementById("loginForm")
+.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      document.getElementById("adminEmail").value,
+      document.getElementById("adminPassword").value
+    );
+  } catch (error) {
+    document.getElementById("loginMessage").textContent =
+      "Login failed. Check your email and password.";
+  }
+});
+
+// Check authority account
+onAuthStateChanged(auth, async (user) => {
+  if (user && user.uid === ADMIN_UID) {
+    cards.hidden = false;
+    panel.hidden = false;
+    document.getElementById("loginForm").hidden = true;
+    document.getElementById("logoutButton").hidden = false;
+    await showRecords();
+  } else {
+    if (user) await signOut(auth);
+    cards.hidden = true;
+    panel.hidden = true;
+    document.getElementById("loginForm").hidden = false;
+    document.getElementById("logoutButton").hidden = true;
+  }
+});
+
+// Logout
+document.getElementById("logoutButton")
+.addEventListener("click", () => signOut(auth));
+
+// Submit complaint
+document.getElementById("complaintForm")
+.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const complaintId =
+    "GP" + Date.now().toString().slice(-7);
+
   const complaint = {
-    id: "GP" + Date.now().toString().slice(-7),
-    name: document.getElementById("name").value,
-    park: document.getElementById("park").value,
+    id: complaintId,
+    name: document.getElementById("name").value.trim(),
+    park: document.getElementById("park").value.trim(),
     category: document.getElementById("category").value,
-    description: document.getElementById("description").value,
-    location: document.getElementById("location").value,
+    description: document.getElementById("description").value.trim(),
+    location: document.getElementById("location").value.trim(),
     status: "Pending"
   };
 
-  complaints.push(complaint);
-  save();
-  showRecords();
+  try {
+    await setDoc(doc(db, "complaints", complaintId), complaint);
 
-  const message = document.getElementById("message");
-  message.hidden = false;
-  message.textContent =
-    "Complaint submitted! Your Complaint ID is " + complaint.id;
+    const message = document.getElementById("message");
+    message.hidden = false;
+    message.textContent =
+      "Complaint submitted! Your Complaint ID is " + complaintId;
 
-  this.reset();
+    e.target.reset();
+
+    if (auth.currentUser?.uid === ADMIN_UID) {
+      await showRecords();
+    }
+  } catch (error) {
+    alert("Unable to submit complaint. Please try again.");
+    console.error(error);
+  }
 });
 
-function trackComplaint() {
-  const id = document.getElementById("trackId")
-    .value.trim().toUpperCase();
+// Display complaints for authority
+async function showRecords() {
+  if (auth.currentUser?.uid !== ADMIN_UID) return;
 
-  const complaint = complaints.find(c => c.id === id);
-  const result = document.getElementById("trackResult");
+  const snapshot = await getDocs(collection(db, "complaints"));
+  const complaints = snapshot.docs.map(d => d.data());
 
-  result.hidden = false;
-
-  if (!complaint) {
-    result.textContent = "Complaint not found. Please check your ID.";
-    return;
-  }
-
-  result.textContent =
-    "Park: " + complaint.park +
-    " | Issue: " + complaint.category +
-    " | Status: " + complaint.status;
-}
-
-function updateStatus(id, status) {
-  complaints = complaints.map(c =>
-    c.id === id ? {...c, status: status} : c
-  );
-  save();
-  showRecords();
-}
-
-function showRecords() {
   const records = document.getElementById("records");
   records.innerHTML = "";
 
@@ -413,10 +484,29 @@ function showRecords() {
   document.getElementById("resolved").textContent =
     complaints.filter(c => c.status === "Resolved").length;
 
-  document.getElementById("empty").hidden = complaints.length > 0;
+  document.getElementById("empty").hidden =
+    complaints.length > 0;
 }
 
-showRecords();
+// Update complaint status
+async function updateStatus(id, status) {
+  if (auth.currentUser?.uid !== ADMIN_UID) return;
+
+  try {
+    await updateDoc(doc(db, "complaints", id), { status });
+    await showRecords();
+  } catch (error) {
+    alert("Unable to update status.");
+    console.error(error);
+  }
+}
+
+// Public tracking will be connected securely in the next step.
+window.trackComplaint = function() {
+  document.getElementById("trackResult").hidden = false;
+  document.getElementById("trackResult").textContent =
+    "Public tracking setup is coming next.";
+};
 </script>
 
 </body>
