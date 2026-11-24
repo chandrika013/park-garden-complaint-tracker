@@ -286,11 +286,13 @@ footer {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
-            <th>Park</th>
-            <th>Issue</th>
-            <th>Status</th>
-            <th>Update</th>
+<th>Name</th>
+<th>Park</th>
+<th>Issue</th>
+<th>AI Category</th>
+<th>AI Priority</th>
+<th>Status</th>
+<th>Update</th>
           </tr>
         </thead>
         <tbody id="records"></tbody>
@@ -410,16 +412,51 @@ document.getElementById("complaintForm")
   const complaintId =
     "GP" + Date.now().toString().slice(-7);
 
-  const complaint = {
-    id: complaintId,
-    name: document.getElementById("name").value.trim(),
-    park: document.getElementById("park").value.trim(),
-    category: document.getElementById("category").value,
-    description: document.getElementById("description").value.trim(),
-    location: document.getElementById("location").value.trim(),
-    status: "Pending"
-  };
+ const description = document.getElementById("description").value.trim();
 
+let aiCategory = "Unavailable";
+let aiPriority = "Unavailable";
+
+// Get AI predictions from Render
+try {
+  const response = await fetch(
+    "https://greenpark-ai-backend.onrender.com/predict",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        complaint: description
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("AI prediction failed");
+  }
+
+  const prediction = await response.json();
+
+  aiCategory = prediction.category;
+  aiPriority = prediction.priority;
+
+} catch (error) {
+  console.error("AI Prediction Error:", error);
+}
+
+// Complaint details
+const complaint = {
+  id: complaintId,
+  name: document.getElementById("name").value.trim(),
+  park: document.getElementById("park").value.trim(),
+  category: document.getElementById("category").value,
+  description: description,
+  location: document.getElementById("location").value.trim(),
+  aiCategory: aiCategory,
+  aiPriority: aiPriority,
+  status: "Pending"
+};
   try {
     await setDoc(doc(db, "complaints", complaintId), complaint);
 
@@ -456,8 +493,15 @@ async function showRecords() {
   complaints.forEach(c => {
     const tr = document.createElement("tr");
 
-    [c.id, c.name, c.park, c.category, c.status]
-      .forEach(value => {
+    [
+  c.id,
+  c.name,
+  c.park,
+  c.category,
+  c.aiCategory || "Not available",
+  c.aiPriority || "Not available",
+  c.status
+].forEach(value => {
         const td = document.createElement("td");
         td.textContent = value;
         tr.appendChild(td);
